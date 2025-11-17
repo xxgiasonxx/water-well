@@ -148,19 +148,22 @@ def cut_well_region(img, center_x, center_y, size=640):
     upper = max(center_y - size // 2, 0)
     right = min(center_x + size // 2, img.width)
     lower = min(center_y + size // 2, img.height)
-    new_img = img.crop((left, upper, right, lower))
+    img = img.crop((left, upper, right, lower))
     if img.width < size or img.height < size:
         new_img = Image.new("RGBA", (size, size), (255, 255, 255, 0))
-        new_img.paste(new_img, ((size - img.width) // 2, (size - img.height) // 2))
-    return new_img
+        new_img.paste(img, ((size - img.width) // 2, (size - img.height) // 2))
+        return new_img
+    return img
 
 def black_image_check(img):
-    """檢查圖片是否為全黑 (透明)"""
-    extrema = img.getextrema()
-    for channel in extrema:
-        if channel != (0, 0):
-            return False
-    return True
+    """檢查圖片是否超過97%透明 (透明)"""
+    alpha = img.split()[-1]
+    alpha_data = np.array(alpha)
+    transparent_pixels = np.sum(alpha_data == 0)
+    total_pixels = alpha_data.size
+    if transparent_pixels / total_pixels >= 0.97:
+        return True
+    return False
 
 def read_wells_from_excel(excel_file, sheet):
     df = pd.read_excel(excel_file, sheet_name=sheet)
@@ -178,10 +181,13 @@ if __name__ == "__main__":
     parser.add_argument('--output', type=str, required=True, help="輸出標註圖片的資料夾。")
     parser.add_argument('--radius', type=int, default=20, help="標註圓圈的半徑 (像素)。")
     parser.add_argument('--origin_img', type=bool, default=False, help="是否輸出原始圖片（未標註）。")
-    parser.add_argument('--draw', type=bool, default=True, help="是否在圖片上繪製標註。")
+    parser.add_argument('--draw', type=bool, default=False, help="是否在圖片上繪製標註。")
     parser.add_argument('--cut_well', type=bool, default=True, help="是否裁切水井區域。")
     parser.add_argument('--cut_size', type=int, default=640, help="裁切水井區域的大小 (像素)。")
     args = parser.parse_args()
+
+
+    print(args.draw)
 
     os.makedirs(args.output, exist_ok=True)
     wells = read_wells_from_excel(args.excel, args.sheet)
