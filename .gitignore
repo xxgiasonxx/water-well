@@ -1,0 +1,28 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# image files
+*.png
+*.jpg
+*.jpeg
+*.tif
+*.tiff
+
+# label files
+*.tfw
+
+# office files
+*.docx
+*.xlsx
+*.pptx 
+
+# zip files
+*.zip
